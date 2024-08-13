@@ -1,22 +1,34 @@
-import React from "react";
-// import seashore from "../images/seashore.webp";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 const FeaturedArtworks = () => {
-  const artworks = [
-    {
-      id: 1,
-      title: "Artwork 1",
-      image:
-        "https://i.etsystatic.com/8663796/r/il/193846/2899370131/il_570xN.2899370131_kzf2.jpg",
-    },
-    {
-      id: 2,
-      title: "Artwork 2",
-      image:
-        "https://e0.pxfuel.com/wallpapers/521/311/desktop-wallpaper-world-famous-abstract-art-paintings-page-1.jpg",
-    },
-    // Add more artworks as needed
-  ];
+  const [artworks, setArtworks] = useState([]); // State to store artworks
+  const [loading, setLoading] = useState(true); // State for loading
+  const [error, setError] = useState(null); // State for error handling
+
+  useEffect(() => {
+    // Function to fetch artworks
+    const fetchArtworks = async () => {
+      try {
+        const response = await axios.get("http://localhost:8080/artworks"); // Replace with your backend URL
+        setArtworks(response.data);
+        setLoading(false);
+      } catch (error) {
+        setError("Failed to fetch artworks");
+        setLoading(false);
+      }
+    };
+
+    fetchArtworks(); // Fetch artworks when component mounts
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>; // Show loading indicator while fetching
+  }
+
+  if (error) {
+    return <div>{error}</div>; // Show error message if fetch fails
+  }
 
   return (
     <div className="bg-white py-12">
@@ -37,6 +49,8 @@ const FeaturedArtworks = () => {
               />
               <div className="p-4">
                 <h3 className="text-lg font-bold">{artwork.title}</h3>
+                <p>{artwork.description}</p>
+                <p>${artwork.price}</p>
               </div>
             </div>
           ))}

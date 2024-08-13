@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const ArtistPage = () => {
@@ -9,47 +10,41 @@ const ArtistPage = () => {
     description: "",
     price: "",
     visible: false,
-    image: null,
-    imageUrl: "",
+    artistId: 1, // Set the artist ID here (this should come from the logged-in user's context or state)
   });
 
   // Handle form input changes
   const handleInputChange = (e) => {
-    const { name, value, type, checked, files } = e.target;
-    if (name === "image" && files.length > 0) {
-      const file = files[0];
-      const imageUrl = URL.createObjectURL(file); // Create a temporary URL for the image
-      setFormValues({
-        ...formValues,
-        image: file,
-        imageUrl: imageUrl,
-      });
-    } else {
-      setFormValues({
-        ...formValues,
-        [name]: type === "checkbox" ? checked : value,
-      });
-    }
+    const { name, value, type, checked } = e.target;
+    setFormValues({
+      ...formValues,
+      [name]: type === "checkbox" ? checked : value,
+    });
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formValues.id === null) {
-      // Create new art entry
-      setArtData([...artData, { ...formValues, id: artData.length + 1 }]);
-    } else {
-      // Update existing art entry
-      setArtData(
-        artData.map((art) =>
-          art.id === formValues.id ? { ...formValues } : art
-        )
-      );
+    try {
+      if (formValues.id === null) {
+        // Create new art entry
+        await axios.post("http://localhost:8080/artworks", formValues);
+      } else {
+        // Update existing art entry
+        await axios.put(
+          `http://localhost:8080/artworks/${formValues.id}`,
+          formValues
+        );
+      }
+      // Fetch updated art data
+      const response = await axios.get("http://localhost:8080/artworks");
+      setArtData(response.data);
+      resetForm();
+    } catch (error) {
+      console.error("Error saving artwork:", error);
     }
-    resetForm();
   };
 
-  // Reset form after submission
   const resetForm = () => {
     setFormValues({
       id: null,
@@ -57,20 +52,40 @@ const ArtistPage = () => {
       description: "",
       price: "",
       visible: false,
-      image: null,
-      imageUrl: "",
+      artistId: 1, // Set the artist ID here if needed
     });
   };
 
   // Handle edit operation
   const handleEdit = (id) => {
+    console.log("Handle edit called with ID:", id);
+    if (id === undefined || id === null) {
+      console.error("Invalid ID:", id);
+      return;
+    }
     const artToEdit = artData.find((art) => art.id === id);
-    setFormValues(artToEdit);
+    if (artToEdit) {
+      setFormValues(artToEdit);
+    } else {
+      console.error("Artwork not found for ID:", id);
+    }
   };
 
   // Handle delete operation
-  const handleDelete = (id) => {
-    setArtData(artData.filter((art) => art.id !== id));
+  const handleDelete = async (id) => {
+    console.log("Handle delete called with ID:", id);
+    if (id === undefined || id === null) {
+      console.error("Invalid ID for delete:", id);
+      return;
+    }
+    try {
+      await axios.delete(`http://localhost:8080/artworks/${id}`);
+      // Fetch updated art data
+      const response = await axios.get("http://localhost:8080/artworks");
+      setArtData(response.data);
+    } catch (error) {
+      console.error("Error deleting artwork:", error);
+    }
   };
 
   return (
@@ -127,19 +142,6 @@ const ArtistPage = () => {
                 required
               />
             </div>
-            <div className="mb-3">
-              <label htmlFor="artImage" className="form-label">
-                Upload Image
-              </label>
-              <input
-                type="file"
-                className="form-control"
-                id="artImage"
-                name="image"
-                onChange={handleInputChange}
-                required
-              />
-            </div>
             <div className="form-check">
               <input
                 type="checkbox"
@@ -183,13 +185,19 @@ const ArtistPage = () => {
                 <div className="card-footer">
                   <button
                     className="btn btn-sm btn-warning me-2"
-                    onClick={() => handleEdit(art.id)}
+                    onClick={() => {
+                      console.log("Editing artwork with ID:", art.id); // Log ID
+                      handleEdit(art.id);
+                    }}
                   >
                     Edit
                   </button>
                   <button
                     className="btn btn-sm btn-danger"
-                    onClick={() => handleDelete(art.id)}
+                    onClick={() => {
+                      console.log("Deleting artwork with ID:", art.id); // Log ID
+                      handleDelete(art.id);
+                    }}
                   >
                     Delete
                   </button>
