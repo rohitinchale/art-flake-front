@@ -4,6 +4,12 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 const ArtistPage = () => {
   const [artData, setArtData] = useState([]);
+  const [artistData, setArtistData] = useState({
+    name: "John Doe",
+    bio: "A contemporary artist known for abstract paintings.",
+    email: "johndoe@example.com",
+    imageUrl: "https://via.placeholder.com/150",
+  });
   const [formValues, setFormValues] = useState({
     id: null,
     title: "",
@@ -12,6 +18,20 @@ const ArtistPage = () => {
     visible: false,
     artistId: 1, // Set the artist ID here (this should come from the logged-in user's context or state)
   });
+
+  // Fetch artworks when component mounts
+  useEffect(() => {
+    const fetchArtworks = async () => {
+      try {
+        const response = await axios.get("http://localhost:8080/artworks");
+        setArtData(response.data);
+      } catch (error) {
+        console.error("Error fetching artworks:", error);
+      }
+    };
+
+    fetchArtworks();
+  }, []);
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -91,138 +111,154 @@ const ArtistPage = () => {
   };
 
   return (
-    <div className="container mt-5">
-      <h2 className="text-center">Admin Dashboard</h2>
-
-      {/* Add New Art Form */}
-      <div className="card mt-4">
-        <div className="card-header">Add New Art</div>
-        <div className="card-body">
-          <form onSubmit={handleSubmit}>
-            <div className="mb-3">
-              <label htmlFor="artPrice" className="form-label">
-                Artist Id
-              </label>
-              <input
-                type="number"
-                className="form-control"
-                id="artistId"
-                name="artistId"
-                value={formValues.artistId}
-                onChange={handleInputChange}
-                placeholder="Enter Artist Id"
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="artTitle" className="form-label">
-                Title
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                id="artTitle"
-                name="title"
-                value={formValues.title}
-                onChange={handleInputChange}
-                placeholder="Enter art title"
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="artDescription" className="form-label">
-                Description
-              </label>
-              <textarea
-                className="form-control"
-                id="artDescription"
-                name="description"
-                value={formValues.description}
-                onChange={handleInputChange}
-                rows="3"
-                placeholder="Enter art description"
-                required
-              ></textarea>
-            </div>
-            <div className="mb-3">
-              <label htmlFor="artPrice" className="form-label">
-                Price
-              </label>
-              <input
-                type="number"
-                className="form-control"
-                id="artPrice"
-                name="price"
-                value={formValues.price}
-                onChange={handleInputChange}
-                placeholder="Enter art price"
-                required
-              />
-            </div>
-            <div className="form-check">
-              <input
-                type="checkbox"
-                className="form-check-input"
-                id="showOnShoppingPage"
-                name="visible"
-                checked={formValues.visible}
-                onChange={handleInputChange}
-              />
-              <label className="form-check-label" htmlFor="showOnShoppingPage">
-                Show on Shopping Page
-              </label>
-            </div>
-            <button type="submit" className="btn btn-primary mt-3">
-              {formValues.id === null ? "Submit" : "Update"}
-            </button>
-          </form>
+    <div className="d-flex">
+      {/* Sidebar */}
+      <div
+        className="d-flex flex-column flex-shrink-0 p-3 text-bg-dark position-fixed"
+        style={{ width: "280px", height: "100vh" }}
+      >
+        <div className="text-center mb-3">
+          <img
+            src={artistData.imageUrl}
+            alt="Artist"
+            width="80"
+            height="80"
+            className="rounded-circle"
+          />
+        </div>
+        <hr />
+        <div>
+          <h6>Bio:</h6>
+          <p>{artistData.bio}</p>
+        </div>
+        <div>
+          <h6>Email:</h6>
+          <p>{artistData.email}</p>
+        </div>
+        <div className="mt-auto">
+          <hr />
+          <h4 className="text-center">{artistData.name}</h4>
         </div>
       </div>
 
-      {/* Art List as Cards */}
-      <div className="mt-5">
-        <h3>Manage Your Artworks</h3>
-        <div className="row">
-          {artData.map((art) => (
-            <div className="col-md-4 mb-4" key={art.id}>
-              <div className="card h-100">
-                <img
-                  src={art.imageUrl || "https://via.placeholder.com/150"}
-                  className="card-img-top"
-                  alt={art.title}
-                />
-                <div className="card-body">
-                  <h5 className="card-title">{art.title}</h5>
-                  <p className="card-text">{art.artistId}</p>
-                  <p className="card-text">{art.description}</p>
-                  <p className="card-text">Price: ${art.price}</p>
-                  <p className="card-text">
-                    {art.visible ? "Visible" : "Hidden"}
-                  </p>
+      {/* Main Content */}
+      <div className="col" style={{ marginLeft: "280px" }}>
+        <div className="container mt-5">
+          <h2 className="text-center">Admin Dashboard</h2>
+
+          {/* Add New Art Form */}
+          <div className="card mt-4">
+            <div className="card-header">Add New Art</div>
+            <div className="card-body">
+              <form onSubmit={handleSubmit}>
+                <div className="mb-3">
+                  <label htmlFor="artTitle" className="form-label">
+                    Title
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="artTitle"
+                    name="title"
+                    value={formValues.title}
+                    onChange={handleInputChange}
+                    placeholder="Enter art title"
+                    required
+                  />
                 </div>
-                <div className="card-footer">
-                  <button
-                    className="btn btn-sm btn-warning me-2"
-                    onClick={() => {
-                      console.log("Editing artwork with ID:", art.id); // Log ID
-                      handleEdit(art.id);
-                    }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="btn btn-sm btn-danger"
-                    onClick={() => {
-                      console.log("Deleting artwork with ID:", art.id); // Log ID
-                      handleDelete(art.id);
-                    }}
-                  >
-                    Delete
-                  </button>
+                <div className="mb-3">
+                  <label htmlFor="artDescription" className="form-label">
+                    Description
+                  </label>
+                  <textarea
+                    className="form-control"
+                    id="artDescription"
+                    name="description"
+                    value={formValues.description}
+                    onChange={handleInputChange}
+                    rows="3"
+                    placeholder="Enter art description"
+                    required
+                  />
                 </div>
-              </div>
+                <div className="mb-3">
+                  <label htmlFor="artPrice" className="form-label">
+                    Price
+                  </label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    id="artPrice"
+                    name="price"
+                    value={formValues.price}
+                    onChange={handleInputChange}
+                    placeholder="Enter art price"
+                    required
+                  />
+                </div>
+                <div className="form-check">
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    id="showOnShoppingPage"
+                    name="visible"
+                    checked={formValues.visible}
+                    onChange={handleInputChange}
+                  />
+                  <label
+                    className="form-check-label"
+                    htmlFor="showOnShoppingPage"
+                  >
+                    Show on Shopping Page
+                  </label>
+                </div>
+                <button type="submit" className="btn btn-primary mt-3">
+                  {formValues.id === null ? "Submit" : "Update"}
+                </button>
+              </form>
             </div>
-          ))}
+          </div>
+
+          {/* Art List as Cards */}
+          <div className="mt-5">
+            <h3>Manage Your Artworks</h3>
+            <div className="row">
+              {artData.map((art) => (
+                <div className="col-md-4 mb-4" key={art.id}>
+                  <div className="card h-100">
+                    <img
+                      src={art.imageUrl || "https://via.placeholder.com/150"}
+                      className="card-img-top"
+                      alt={art.title}
+                    />
+                    <div className="card-body">
+                      <h5 className="card-title">{art.title}</h5>
+                      <p className="card-text">Artist ID: {art.artistId}</p>
+                      <p className="card-text">{art.description}</p>
+                      <p className="card-text">Price: ${art.price}</p>
+                      <p className="card-text">
+                        Show on Shopping Page: {art.visible ? "Yes" : "No"}
+                      </p>
+                    </div>
+                    <div className="card-footer">
+                      <button
+                        className="btn btn-warning me-2"
+                        onClick={() => handleEdit(art.id)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => handleDelete(art.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>

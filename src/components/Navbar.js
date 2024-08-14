@@ -11,18 +11,18 @@ const Navbar = () => {
           </Link>
         </div>
         <div className="space-x-4">
-          <Link to="/" className="text-white hover:text-gray-300">
+          <a href="/" className="text-white hover:text-gray-300">
             Home
-          </Link>
-          <Link to="/about" className="text-white hover:text-gray-300">
-            About
-          </Link>
-          <Link to="/gallery" className="text-white hover:text-gray-300">
-            Gallery
-          </Link>
-          <Link to="/contact" className="text-white hover:text-gray-300">
-            Contact
-          </Link>
+          </a>
+          <a href="/" className="text-white hover:text-gray-300">
+            Arts
+          </a>
+          <a href="/" className="text-white hover:text-gray-300">
+            Artists
+          </a>
+          <a href="/" className="text-white hover:text-gray-300">
+            Exhibitions
+          </a>
         </div>
       </div>
     </nav>
