@@ -26,17 +26,19 @@ const ArtistPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const payload = {
+        ...formValues,
+        image: formValues.image || "default-image-url", // Ensure image is not null
+      };
+
       if (formValues.id === null) {
-        // Create new art entry
-        await axios.post("http://localhost:8080/artworks", formValues);
+        await axios.post("http://localhost:8080/artworks", payload);
       } else {
-        // Update existing art entry
         await axios.put(
           `http://localhost:8080/artworks/${formValues.id}`,
-          formValues
+          payload
         );
       }
-      // Fetch updated art data
       const response = await axios.get("http://localhost:8080/artworks");
       setArtData(response.data);
       resetForm();
@@ -97,6 +99,21 @@ const ArtistPage = () => {
         <div className="card-header">Add New Art</div>
         <div className="card-body">
           <form onSubmit={handleSubmit}>
+            <div className="mb-3">
+              <label htmlFor="artPrice" className="form-label">
+                Artist Id
+              </label>
+              <input
+                type="number"
+                className="form-control"
+                id="artistId"
+                name="artistId"
+                value={formValues.artistId}
+                onChange={handleInputChange}
+                placeholder="Enter Artist Id"
+                required
+              />
+            </div>
             <div className="mb-3">
               <label htmlFor="artTitle" className="form-label">
                 Title
@@ -176,6 +193,7 @@ const ArtistPage = () => {
                 />
                 <div className="card-body">
                   <h5 className="card-title">{art.title}</h5>
+                  <p className="card-text">{art.artistId}</p>
                   <p className="card-text">{art.description}</p>
                   <p className="card-text">Price: ${art.price}</p>
                   <p className="card-text">
