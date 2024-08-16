@@ -93,6 +93,31 @@ const ArtistPage = () => {
     }
   };
 
+  const userJson = localStorage.getItem("user");
+
+  // Check if user data exists in localStorage
+  let username;
+  let email;
+  if (userJson) {
+    try {
+      // Parse the JSON string to a JavaScript object
+      const user = JSON.parse(userJson);
+
+      // Access the username from the user object
+      username = user.username;
+      email = user.email;
+
+      // Log the username to the console
+      console.log("Username:", username);
+    } catch (error) {
+      console.error("Failed to parse user data:", error);
+    }
+  } else {
+    username = "";
+    email = "";
+    console.log("No user data found in localStorage.");
+  }
+
   // Handle delete operation
   const handleDelete = async (id) => {
     console.log("Handle delete called with ID:", id);
@@ -133,18 +158,18 @@ const ArtistPage = () => {
         </div>
         <div>
           <h6>Email:</h6>
-          <p>{artistData.email}</p>
+          <p>{email}</p>
         </div>
         <div className="mt-auto">
           <hr />
-          <h4 className="text-center">{artistData.name}</h4>
+          <h4 className="text-center">{username}</h4>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="col" style={{ marginLeft: "280px" }}>
         <div className="container mt-5">
-          <h2 className="text-center">Admin Dashboard</h2>
+          <h2 className="text-center">Artist Dashboard</h2>
 
           {/* Add New Art Form */}
           <div className="card mt-4">

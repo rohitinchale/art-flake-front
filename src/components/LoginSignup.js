@@ -1,27 +1,89 @@
 import React, { useState } from "react";
-import "./LoginSignUp.css";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import "./LoginSignUp.css";
 
 const LoginSignup = () => {
-  const navigate = useNavigate(); // Initialize useNavigate hook
-
-  // State to toggle between login and register
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    username: "",
+    role: "VISITOR", // Default role
+  });
+  const [error, setError] = useState("");
 
-  const handleLoginSubmit = (e) => {
-    e.preventDefault();
-    // Directly navigate to the home page
-    navigate("/home");
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleRegisterSubmit = (e) => {
+  // const handleRoleChange = (e) => {
+  //   setFormData({ ...formData, role: e.target.value });
+  // };
+
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    // Handle registration logic here
-    navigate("/home");
+
+    try {
+      const response = await axios.get("http://localhost:8080/user");
+      const users = response.data;
+
+      const user = users.find(
+        (u) => u.email === formData.email && u.password === formData.password
+      );
+      localStorage.setItem("user",JSON.stringify(user));
+
+      if (user) {
+        switch (user.role) {
+          case "ADMIN":
+            navigate("/admin");
+            break;
+          case "ARTIST":
+            navigate("/artist");
+            break;
+          case "VISITOR":
+            navigate("/home");
+            break;
+          default:
+            setError("Invalid role.");
+        }
+      } else {
+        setError("Invalid email or password.");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("An error occurred while logging in. Please try again.");
+    }
+  };
+
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await axios.post("http://localhost:8080/user", {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role, // Ensure role is sent to the backend
+      });
+
+      const createdUser = response.data;
+
+      if (formData.role === "ARTIST") {
+        navigate("/artist");
+      } else {
+        navigate("/home");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("An error occurred during registration. Please try again.");
+    }
   };
 
   const switchTabs = (tab) => {
     setIsLogin(tab === "login");
+    setError("");
   };
 
   return (
@@ -64,16 +126,18 @@ const LoginSignup = () => {
             <form className="loginForm" onSubmit={handleLoginSubmit}>
               <div>
                 <label
-                  htmlFor="username"
+                  htmlFor="email"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Username
+                  Email
                 </label>
                 <div className="mt-1">
                   <input
-                    id="username"
-                    name="username"
-                    type="text"
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleChange}
                     required
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   />
@@ -92,11 +156,15 @@ const LoginSignup = () => {
                     id="password"
                     name="password"
                     type="password"
+                    value={formData.password}
+                    onChange={handleChange}
                     required
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   />
                 </div>
               </div>
+
+              {error && <p className="text-red-500 text-sm">{error}</p>}
 
               <div>
                 <button
@@ -111,16 +179,18 @@ const LoginSignup = () => {
             <form className="signUpForm" onSubmit={handleRegisterSubmit}>
               <div>
                 <label
-                  htmlFor="name"
+                  htmlFor="username"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Name
+                  Username
                 </label>
                 <div className="mt-1">
                   <input
-                    id="name"
-                    name="name"
+                    id="username"
+                    name="username"
                     type="text"
+                    value={formData.username}
+                    onChange={handleChange}
                     required
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   />
@@ -139,6 +209,8 @@ const LoginSignup = () => {
                     id="email"
                     name="email"
                     type="email"
+                    value={formData.email}
+                    onChange={handleChange}
                     required
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   />
@@ -157,9 +229,41 @@ const LoginSignup = () => {
                     id="password"
                     name="password"
                     type="password"
+                    value={formData.password}
+                    onChange={handleChange}
                     required
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Role
+                </label>
+                <div className="mt-1">
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      name="role"
+                      value="ARTIST"
+                      checked={formData.role === "ARTIST"}
+                      onChange={handleChange}
+                      className="form-radio text-indigo-600"
+                    />
+                    <span className="ml-2">Artist</span>
+                  </label>
+                  <label className="inline-flex items-center ml-6">
+                    <input
+                      type="radio"
+                      name="role"
+                      value="VISITOR"
+                      checked={formData.role === "VISITOR"}
+                      onChange={handleChange}
+                      className="form-radio text-indigo-600"
+                    />
+                    <span className="ml-2">Visitor</span>
+                  </label>
                 </div>
               </div>
 
