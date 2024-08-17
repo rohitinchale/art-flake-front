@@ -3,6 +3,8 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const ArtistPage = () => {
+  const userJson = localStorage.getItem("user");
+  const user = JSON.parse(userJson);
   const [artData, setArtData] = useState([]);
   const [artistData, setArtistData] = useState({
     name: "John Doe",
@@ -15,15 +17,19 @@ const ArtistPage = () => {
     title: "",
     description: "",
     price: "",
+    image: "",
     visible: false,
-    artistId: 1, // Set the artist ID here (this should come from the logged-in user's context or state)
+    artistId: user.id, // Set the artist ID here (this should come from the logged-in user's context or state)
   });
 
   // Fetch artworks when component mounts
   useEffect(() => {
     const fetchArtworks = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/artworks");
+        console.log(user);
+        const response = await axios.get(
+          `http://localhost:8080/artworks/artist/${user.id}`
+        );
         setArtData(response.data);
       } catch (error) {
         console.error("Error fetching artworks:", error);
@@ -48,7 +54,7 @@ const ArtistPage = () => {
     try {
       const payload = {
         ...formValues,
-        image: formValues.image || "default-image-url", // Ensure image is not null
+        image: formValues.image || "https://via.placeholder.com/150", // Ensure image is not null
       };
 
       if (formValues.id === null) {
@@ -59,7 +65,9 @@ const ArtistPage = () => {
           payload
         );
       }
-      const response = await axios.get("http://localhost:8080/artworks");
+      const response = await axios.get(
+        `http://localhost:8080/artworks/artist/${user.id}`
+      );
       setArtData(response.data);
       resetForm();
     } catch (error) {
@@ -73,8 +81,9 @@ const ArtistPage = () => {
       title: "",
       description: "",
       price: "",
+      image: "",
       visible: false,
-      artistId: 1, // Set the artist ID here if needed
+      artistId: user.id, // Set the artist ID here if needed
     });
   };
 
@@ -92,8 +101,6 @@ const ArtistPage = () => {
       console.error("Artwork not found for ID:", id);
     }
   };
-
-  const userJson = localStorage.getItem("user");
 
   // Check if user data exists in localStorage
   let username;
@@ -128,7 +135,9 @@ const ArtistPage = () => {
     try {
       await axios.delete(`http://localhost:8080/artworks/${id}`);
       // Fetch updated art data
-      const response = await axios.get("http://localhost:8080/artworks");
+      const response = await axios.get(
+        `http://localhost:8080/artworks/artist/${user.id}`
+      );
       setArtData(response.data);
     } catch (error) {
       console.error("Error deleting artwork:", error);
@@ -221,6 +230,20 @@ const ArtistPage = () => {
                     required
                   />
                 </div>
+                <div className="mb-3">
+                  <label htmlFor="artImage" className="form-label">
+                    Image URL
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="artImage"
+                    name="image"
+                    value={formValues.image}
+                    onChange={handleInputChange}
+                    placeholder="Enter image URL"
+                  />
+                </div>
                 <div className="form-check">
                   <input
                     type="checkbox"
@@ -252,7 +275,7 @@ const ArtistPage = () => {
                 <div className="col-md-4 mb-4" key={art.id}>
                   <div className="card h-100">
                     <img
-                      src={art.imageUrl || "https://via.placeholder.com/150"}
+                      src={art.image || "https://via.placeholder.com/150"}
                       className="card-img-top"
                       alt={art.title}
                     />

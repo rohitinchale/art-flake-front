@@ -43,14 +43,14 @@ const FeaturedArtworks = () => {
               className="bg-gray-100 rounded-lg overflow-hidden shadow-lg"
             >
               <img
-                src={artwork.image}
+                src={artwork.image} // Use the URL directly from the database
                 alt={artwork.title}
                 className="w-full h-64 object-cover"
               />
               <div className="p-4">
                 <h3 className="text-lg font-bold">{artwork.title}</h3>
                 <p>{artwork.description}</p>
-                <p>${artwork.price}</p>
+                <p>${artwork.price.toFixed(2)}</p>
               </div>
             </div>
           ))}

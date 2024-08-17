@@ -3,7 +3,6 @@ import axios from 'axios';
 
 const ManageArtworks = () => {
   const [artworks, setArtworks] = useState([]);
-  const [artists, setArtists] = useState([]); // For artist dropdown
   const [formValues, setFormValues] = useState({
     id: null,
     title: '',
@@ -15,16 +14,13 @@ const ManageArtworks = () => {
   const [currentOperation, setCurrentOperation] = useState(null);
 
   useEffect(() => {
-    // Fetch artworks and artists data when the component mounts
+    // Fetch artworks data when the component mounts
     const fetchData = async () => {
       try {
         const artworksResponse = await axios.get('http://localhost:8080/artworks'); // Update URL as needed
         setArtworks(artworksResponse.data);
-        
-        const artistsResponse = await axios.get('http://localhost:8080/artists'); // Update URL as needed
-        setArtists(artistsResponse.data);
       } catch (error) {
-        console.error('Error fetching artworks or artists:', error);
+        console.error('Error fetching artworks:', error);
       }
     };
 
@@ -181,23 +177,18 @@ const ManageArtworks = () => {
               </div>
               <div className="mb-3">
                 <label htmlFor="artworkArtistId" className="form-label">
-                  Artist
+                  Artist ID
                 </label>
-                <select
-                  className="form-select"
+                <input
+                  type="text"
+                  className="form-control"
                   id="artworkArtistId"
                   name="artistId"
                   value={formValues.artistId}
                   onChange={handleInputChange}
+                  placeholder="Enter artist ID"
                   required
-                >
-                  <option value="">Select artist</option>
-                  {artists.map((artist) => (
-                    <option key={artist.id} value={artist.id}>
-                      {artist.name}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
               <button type="submit" className="btn btn-success">
                 Add Artwork
@@ -274,23 +265,18 @@ const ManageArtworks = () => {
               </div>
               <div className="mb-3">
                 <label htmlFor="artworkArtistId" className="form-label">
-                  Artist
+                  Artist ID
                 </label>
-                <select
-                  className="form-select"
+                <input
+                  type="text"
+                  className="form-control"
                   id="artworkArtistId"
                   name="artistId"
                   value={formValues.artistId}
                   onChange={handleInputChange}
+                  placeholder="Enter artist ID"
                   required
-                >
-                  <option value="">Select artist</option>
-                  {artists.map((artist) => (
-                    <option key={artist.id} value={artist.id}>
-                      {artist.name}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
               <button type="submit" className="btn btn-warning">
                 Update Artwork
@@ -346,7 +332,7 @@ const ManageArtworks = () => {
                 <strong>{artwork.title}</strong>
                 <p>{artwork.description}</p>
                 <p><small>Price: ${artwork.price}</small></p>
-                <p><small>Artist: {artwork.artistName}</small></p>
+                <p><small>Artist ID: {artwork.artistId}</small></p>
                 <img src={artwork.image} alt={artwork.title} style={{ width: '100px', height: '100px' }} />
               </div>
               <div>
